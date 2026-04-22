@@ -1,48 +1,51 @@
 # LocalSkillShare Next Front
 
-LocalSkillShare の Next.js フロントエンドです。
+LocalSkillShare のフロントエンドです。
 
-Laravel API (`lss-laravel-api`) と接続して、スキル一覧・スキル詳細・予約作成画面の土台を実装しています。現時点では、画面と API 接続の検証を進めるための最小構成です。
+Next.js から Laravel API (`lss-laravel-api`) を呼び出し、スキル一覧から詳細、予約フォームへ進む流れを確認できるプロトタイプです。
+
+## 見られる画面
+
+| path | description |
+| --- | --- |
+| `/skills` | API から取得したスキル一覧を表示 |
+| `/skills/[id]` | スキル詳細を表示 |
+| `/skills/[id]/reserve` | 予約作成フォームを表示 |
+
+現在は画面デザインを作り込む前の段階で、API 接続とページ遷移の土台を優先しています。
+
+## できること
+
+- Laravel API からスキル一覧を取得して表示
+- 一覧からスキル詳細へ遷移
+- 詳細から予約フォームへ遷移
+- 共通 API クライアント `lib/api.ts` で API 通信を管理
+- 主要画面の表示と送信処理をテスト
 
 ## 技術スタック
 
-- Next.js 16.1.6
+- Next.js 16
 - React 19
 - TypeScript
 - Tailwind CSS
 - Vitest
 - Testing Library
 
-## 現在できること
+## Laravel API との接続
 
-- `/skills` で Laravel API からスキル一覧を取得して表示
-- `/skills/[id]` でスキル詳細を取得して表示
-- `/skills/[id]/reserve` で予約作成フォームを表示
-- 共通 API クライアント `lib/api.ts` から `NEXT_PUBLIC_API_BASE_URL` を使って Laravel API へアクセス
-- スキル一覧、スキル詳細、予約フォームの表示・送信処理をテスト
-
-## 現在の注意点
-
-- トップページ `/` はまだ create-next-app の初期画面です。
-- 予約フォームは画面と送信処理の土台がありますが、Laravel API 側の予約作成仕様とはまだ完全に揃っていません。
-- Laravel API 側は予約作成時に `date` と `X-User-Id` を期待していますが、フロント側は現在 `startAt` を送っています。
-- `/ping` は接続確認用のページですが、現在の `NEXT_PUBLIC_API_BASE_URL` に `/api` を含める設定だと URL が二重になるため調整が必要です。
-
-## セットアップ
-
-```bash
-npm install
-```
-
-`.env` または `.env.local` に Laravel API の URL を設定します。
+`.env` または `.env.local` に API の URL を設定します。
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000/api
 ```
 
-`NEXT_PUBLIC_API_BASE_URL` はブラウザ側にも公開される Next.js の環境変数です。API のベース URL として `lib/api.ts` から参照しています。
+Docker で Laravel API を `10000` 番で動かす場合:
 
-## 起動方法
+```env
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:10000/api
+```
+
+## 動作確認
 
 先に Laravel API を起動します。
 
@@ -51,53 +54,18 @@ cd ../lss-laravel-api
 php artisan serve
 ```
 
-標準では `http://127.0.0.1:8000` で起動します。
-
-次に Next.js を起動します。
+次にフロントエンドを起動します。
 
 ```bash
 cd ../next-laravel-front
+npm install
 npm run dev
 ```
 
-標準では `http://localhost:3000` で起動します。
-
-## 主要ページ
-
-| path | description |
-| --- | --- |
-| `/` | 初期テンプレート画面 |
-| `/skills` | スキル一覧 |
-| `/skills/[id]` | スキル詳細 |
-| `/skills/[id]/reserve` | 予約作成フォーム |
-| `/ping` | API 接続確認用のページ |
-
-## API 接続
-
-API の共通処理は `lib/api.ts` にあります。
-
-```ts
-const BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
-```
-
-現在の想定:
+ブラウザで確認します。
 
 ```text
-NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000/api
-```
-
-この設定の場合、次のような URL にアクセスします。
-
-```text
-GET http://127.0.0.1:8000/api/skills
-GET http://127.0.0.1:8000/api/skills/{id}
-POST http://127.0.0.1:8000/api/skills/{id}/reservations
-```
-
-`fetch failed` が出る場合は、Laravel API が起動しているか確認してください。
-
-```bash
-curl http://127.0.0.1:8000/api/skills
+http://localhost:3000/skills
 ```
 
 ## テスト
@@ -106,23 +74,33 @@ curl http://127.0.0.1:8000/api/skills
 npm test
 ```
 
-確認済みの実行結果:
+確認済み:
 
 ```text
 Test Files  3 passed (3)
 Tests       3 passed (3)
 ```
 
-現在の主なテスト対象:
+テストでは、スキル一覧表示・スキル詳細表示・予約フォーム送信後の表示を確認しています。
 
-- スキル一覧ページが API レスポンスのスキルを表示すること
-- スキル詳細ページが詳細情報と予約導線を表示すること
-- 予約作成ページがフォーム送信後に成功メッセージを表示すること
+## 現在の開発範囲
 
-## 今後やること
+このリポジトリは、LocalSkillShare の画面プロトタイプです。現時点では以下が今後の改善対象です。
 
-- トップページを LocalSkillShare 用に差し替える
-- 予約作成フォームの送信 payload を Laravel API の `date` に合わせる
-- 予約作成時に `X-User-Id` を送る方法を決める
-- `/ping` の URL 組み立てを現在の env 設定に合わせる
-- 一覧検索やカテゴリ絞り込み UI を追加する
+- トップページはまだ Next.js 初期画面
+- 一覧・詳細画面は簡素な表示
+- 検索 UI / カテゴリ絞り込み UI は未実装
+- 予約作成 payload は Laravel API 側の `date` / `X-User-Id` に合わせる必要あり
+
+## 次に作る画面
+
+ポートフォリオとして見せるため、次の 3 画面を優先して作り込む想定です。
+
+1. `/skills`
+   スキルカード一覧、検索、カテゴリ絞り込みを追加する。
+
+2. `/skills/[id]`
+   スキル説明、価格、エリア、予約導線を見やすくする。
+
+3. `/skills/[id]/reserve`
+   Laravel API と接続して、実際に予約作成できる状態にする。
