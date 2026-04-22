@@ -4,6 +4,23 @@ LocalSkillShare のフロントエンドです。
 
 Next.js から Laravel API (`lss-laravel-api`) を呼び出し、スキル一覧から詳細、予約フォームへ進む流れを確認できるプロトタイプです。
 
+## 公開デモ
+
+現在公開している画面です。
+
+| page | url | description |
+| --- | --- | --- |
+| スキル一覧 | [https://next-laravel-front.vercel.app/skills](https://next-laravel-front.vercel.app/skills) | API から取得したスキル一覧を確認できます。 |
+| スキル詳細 | `/skills` の各スキル名から遷移 | スキルの説明、カテゴリ、エリア、価格を確認できます。 |
+| 予約フォーム | 詳細画面の「予約する」から遷移 | 希望日時を入力する予約フォームを確認できます。 |
+
+直接確認用の例:
+
+- [Laravel API 設計レビューの詳細](https://next-laravel-front.vercel.app/skills/01kptp2s5q8b4t8k8jw25zasee)
+- [Laravel API 設計レビューの予約フォーム](https://next-laravel-front.vercel.app/skills/01kptp2s5q8b4t8k8jw25zasee/reserve)
+
+詳細・予約フォームの直接 URL は API 側のデモデータ ID に依存します。開けない場合は、スキル一覧から任意のスキル名をクリックしてください。
+
 ## 見られる画面
 
 | path | description |
