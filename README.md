@@ -11,15 +11,8 @@ Next.js から Laravel API (`lss-laravel-api`) を呼び出し、スキル一覧
 | page | url | description |
 | --- | --- | --- |
 | スキル一覧 | [https://next-laravel-front.vercel.app/skills](https://next-laravel-front.vercel.app/skills) | API から取得したスキル一覧を確認できます。 |
-| スキル詳細 | `/skills` の各スキル名から遷移 | スキルの説明、カテゴリ、エリア、価格を確認できます。 |
-| 予約フォーム | 詳細画面の「予約する」から遷移 | 希望日時を入力する予約フォームを確認できます。 |
-
-直接確認用の例:
-
-- [Laravel API 設計レビューの詳細](https://next-laravel-front.vercel.app/skills/01kptp2s5q8b4t8k8jw25zasee)
-- [Laravel API 設計レビューの予約フォーム](https://next-laravel-front.vercel.app/skills/01kptp2s5q8b4t8k8jw25zasee/reserve)
-
-詳細・予約フォームの直接 URL は API 側のデモデータ ID に依存します。開けない場合は、スキル一覧から任意のスキル名をクリックしてください。
+| スキル詳細 | [https://next-laravel-front.vercel.app/skills/01kptp2s5q8b4t8k8jw25zasee](https://next-laravel-front.vercel.app/skills/01kptp2s5q8b4t8k8jw25zasee) | スキルの説明、カテゴリ、エリア、価格を確認できます。 |
+| 予約フォーム | [https://next-laravel-front.vercel.app/skills/01kptp2s5q8b4t8k8jw25zasee/reserve](https://next-laravel-front.vercel.app/skills/01kptp2s5q8b4t8k8jw25zasee/reserve) | 希望日時を入力する予約フォームを確認できます。 |
 
 ## 見られる画面
 
