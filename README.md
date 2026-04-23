@@ -1,8 +1,10 @@
-# LocalSkillShare Next Front
+# LocalSkillShare Laravel + Next Frontend
 
-LocalSkillShare のフロントエンドです。
+LocalSkillShare を Laravel API + Next.js 構成で作り直している版のフロントエンドです。
 
-Next.js から Laravel API (`lss-laravel-api`) を呼び出し、スキル一覧から詳細、予約フォームへ進む流れを確認できるプロトタイプです。
+このリポジトリはフロントエンドのみを管理しています。バックエンドは別リポジトリの Laravel API (`lss-laravel-api`) を利用します。
+
+Next.js から Laravel API を呼び出し、スキル一覧から詳細、予約フォームへ進む流れを確認できるプロトタイプです。
 
 ## 公開デモ
 
@@ -95,7 +97,9 @@ Tests       3 passed (3)
 
 ## 現在の開発範囲
 
-このリポジトリは、LocalSkillShare の画面プロトタイプです。現時点では以下が今後の改善対象です。
+このリポジトリは、LocalSkillShare Laravel + Next 版のフロントエンドプロトタイプです。元の LocalSkillShare 本体ではなく、Laravel API と接続する Next.js 側の画面実装を扱います。
+
+現時点では以下が今後の改善対象です。
 
 - トップページはまだ Next.js 初期画面
 - 一覧・詳細画面は簡素な表示
