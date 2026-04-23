@@ -28,8 +28,8 @@ export default function ReservePage({
         { startAt },
       );
       setMsg(`予約を作成しました: ${res.data.id}`);
-    } catch (err: any) {
-      setMsg(err?.message ?? "予約に失敗しました");
+    } catch (err: unknown) {
+      setMsg(err instanceof Error ? err.message : "予約に失敗しました");
     } finally {
       setBusy(false);
     }

@@ -4,6 +4,16 @@ if (!BASE) {
   throw new Error("NEXT_PUBLIC_API_BASE_URL is not set");
 }
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 export type Skill = {
   id: string;
   ownerId: string;
@@ -28,7 +38,7 @@ export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`GET ${path} failed: ${res.status} ${text}`);
+    throw new ApiError(`GET ${path} failed: ${res.status} ${text}`, res.status);
   }
   return res.json() as Promise<T>;
 }
@@ -48,7 +58,10 @@ export async function apiPost<TBody, TRes>(
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`POST ${path} failed: ${res.status} ${text}`);
+    throw new ApiError(
+      `POST ${path} failed: ${res.status} ${text}`,
+      res.status,
+    );
   }
   return res.json() as Promise<TRes>;
 }

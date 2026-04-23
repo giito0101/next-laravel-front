@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { apiGet, Skill } from "@/lib/api";
+import { notFound } from "next/navigation";
+import { ApiError, apiGet, Skill } from "@/lib/api";
 
 type SkillDetailResponse = { data: Skill };
 
@@ -9,8 +10,13 @@ export default async function SkillDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  console.log("params:" + params);
-  const res = await apiGet<SkillDetailResponse>(`/skills/${id}`);
+  const res = await apiGet<SkillDetailResponse>(`/skills/${id}`).catch((err) => {
+    if (err instanceof ApiError && err.status === 404) {
+      notFound();
+    }
+
+    throw err;
+  });
   const skill = res.data;
 
   return (
