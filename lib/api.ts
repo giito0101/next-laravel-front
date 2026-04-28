@@ -24,6 +24,13 @@ export type Skill = {
   area: string;
 };
 
+export type SkillListResponse = {
+  current_page: number;
+  data: Skill[];
+  last_page: number;
+  total: number;
+};
+
 export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,
