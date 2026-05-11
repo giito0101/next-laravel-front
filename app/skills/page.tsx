@@ -167,7 +167,7 @@ export default async function SkillsPage({
               />
             </label>
 
-            <div className="flex flex-col justify-end gap-3 sm:flex-row xl:flex-col">
+            <div className="flex flex-col gap-3 sm:flex-row sm:self-end">
               <button
                 type="submit"
                 className="inline-flex h-12 items-center justify-center rounded-2xl bg-slate-950 px-5 text-sm font-medium text-white transition hover:bg-slate-800"
