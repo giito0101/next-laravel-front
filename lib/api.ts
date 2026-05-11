@@ -22,6 +22,7 @@ export type Skill = {
   price: number;
   category: string;
   area: string;
+  imageUrl?: string | null;
 };
 
 export type SkillListResponse = {
@@ -29,6 +30,31 @@ export type SkillListResponse = {
   data: Skill[];
   last_page: number;
   total: number;
+};
+
+export type SkillReview = {
+  id: string;
+  owner?: {
+    id: string;
+    name: string;
+  } | null;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
+};
+
+export type SkillDetail = Skill & {
+  owner?: {
+    id: string;
+    name: string;
+  } | null;
+  averageRating?: number | null;
+  reviewCount?: number | null;
+  reviews?: SkillReview[] | null;
+};
+
+export type SkillDetailResponse = {
+  data: SkillDetail;
 };
 
 export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
