@@ -57,6 +57,14 @@ export type SkillDetailResponse = {
   data: SkillDetail;
 };
 
+export type SkillReviewsResponse = {
+  data: SkillReview[];
+};
+
+export type SkillReviewResponse = {
+  data: SkillReview;
+};
+
 export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,
@@ -79,12 +87,15 @@ export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
 export async function apiPost<TBody, TRes>(
   path: string,
   body: TBody,
+  init?: RequestInit,
 ): Promise<TRes> {
   const res = await fetch(`${BASE}${path}`, {
+    ...init,
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
     },
     body: JSON.stringify(body),
   });

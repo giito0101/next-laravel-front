@@ -5,6 +5,7 @@ import {
   apiGet,
   SkillDetailResponse,
   SkillReview,
+  SkillReviewsResponse,
 } from "@/lib/api";
 import { ReviewForm } from "./review-form";
 import { SkillImage } from "./skill-image";
@@ -31,12 +32,21 @@ function ratingLabel(rating: number): string {
   return `${rating.toFixed(1)} / 5`;
 }
 
-function fallbackAverageRating(skillAverageRating?: number | null): number {
+function fallbackAverageRating(
+  skillAverageRating?: number | null,
+  reviews: SkillReview[] = [],
+): number {
   if (typeof skillAverageRating === "number") {
     return skillAverageRating;
   }
 
-  return 0;
+  if (reviews.length === 0) {
+    return 0;
+  }
+
+  const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+
+  return total / reviews.length;
 }
 
 function fallbackReviewCount(skillReviewCount?: number | null, reviewLength = 0): number {
@@ -77,16 +87,19 @@ export default async function SkillDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const res = await apiGet<SkillDetailResponse>(`/skills/${id}`).catch((err) => {
-    if (err instanceof ApiError && err.status === 404) {
-      notFound();
-    }
+  const [res, reviewsRes] = await Promise.all([
+    apiGet<SkillDetailResponse>(`/skills/${id}`).catch((err) => {
+      if (err instanceof ApiError && err.status === 404) {
+        notFound();
+      }
 
-    throw err;
-  });
+      throw err;
+    }),
+    apiGet<SkillReviewsResponse>(`/skills/${id}/reviews`),
+  ]);
   const skill = res.data;
-  const reviews = skill.reviews ?? [];
-  const averageRating = fallbackAverageRating(skill.averageRating);
+  const reviews = reviewsRes.data;
+  const averageRating = fallbackAverageRating(skill.averageRating, reviews);
   const reviewCount = fallbackReviewCount(skill.reviewCount, reviews.length);
   const ownerName = skill.owner?.name ?? "未設定";
 
@@ -161,7 +174,7 @@ export default async function SkillDetailPage({
                   href="#review-form"
                   className="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                 >
-                  レビューを投稿する
+                  レビュー投稿フォームへ
                 </a>
               </div>
             </div>
@@ -211,7 +224,7 @@ export default async function SkillDetailPage({
             )}
           </div>
 
-          <ReviewForm />
+          <ReviewForm skillId={skill.id} />
         </section>
       </div>
     </main>

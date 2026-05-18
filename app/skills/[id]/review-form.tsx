@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
+import { apiPost, SkillReviewResponse } from "@/lib/api";
 
 const ratingOptions = [
   { label: "評価を選択", value: "" },
@@ -11,8 +13,73 @@ const ratingOptions = [
   { label: "5", value: "5" },
 ];
 
-export function ReviewForm() {
+const demoUserId = process.env.NEXT_PUBLIC_DEMO_USER_ID ?? "provider-pc-1";
+
+type SubmitStatus =
+  | { type: "idle"; message: string }
+  | { type: "success"; message: string }
+  | { type: "error"; message: string };
+
+export function ReviewForm({ skillId }: { skillId: string }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState<SubmitStatus>({
+    type: "idle",
+    message: "",
+  });
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const rating = Number(formData.get("rating"));
+    const comment = String(formData.get("comment") ?? "").trim();
+
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      setStatus({
+        type: "error",
+        message: "評価を選択してください。",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatus({ type: "idle", message: "" });
+
+    try {
+      await apiPost<
+        { rating: number; comment: string | null },
+        SkillReviewResponse
+      >(
+        `/skills/${skillId}/reviews`,
+        {
+          rating,
+          comment: comment === "" ? null : comment,
+        },
+        {
+          headers: {
+            "X-User-Id": demoUserId,
+          },
+        },
+      );
+
+      form.reset();
+      setStatus({
+        type: "success",
+        message: "レビューを投稿しました。",
+      });
+      router.refresh();
+    } catch {
+      setStatus({
+        type: "error",
+        message: "レビューを投稿できませんでした。",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <section
@@ -39,17 +106,18 @@ export function ReviewForm() {
           }}
           className="inline-flex h-12 items-center justify-center rounded-2xl bg-slate-950 px-5 text-sm font-medium text-white transition hover:bg-slate-800"
         >
-          レビューを投稿する
+          {isOpen ? "入力フォームを閉じる" : "入力フォームを開く"}
         </button>
       </div>
 
       {isOpen ? (
-        <form className="mt-6 grid gap-5">
+        <form className="mt-6 grid gap-5" onSubmit={handleSubmit}>
           <label className="flex flex-col gap-2">
             <span className="text-sm font-medium text-slate-700">評価</span>
             <select
               name="rating"
               defaultValue=""
+              required
               className="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
             >
               {ratingOptions.map((option) => (
@@ -71,9 +139,25 @@ export function ReviewForm() {
             />
           </label>
 
-          <p className="text-sm text-slate-500">
-            エラーがある場合は、このフォームの下に表示されます。
-          </p>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex h-12 items-center justify-center rounded-2xl bg-teal-700 px-5 text-sm font-medium text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:bg-slate-300"
+          >
+            {isSubmitting ? "投稿中..." : "レビューを投稿する"}
+          </button>
+
+          {status.message ? (
+            <p
+              className={
+                status.type === "success"
+                  ? "text-sm font-medium text-teal-700"
+                  : "text-sm font-medium text-rose-600"
+              }
+            >
+              {status.message}
+            </p>
+          ) : null}
         </form>
       ) : null}
     </section>

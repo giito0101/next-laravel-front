@@ -5,27 +5,41 @@ import { apiGet } from "@/lib/api";
 
 vi.mock("@/lib/api", () => ({
   apiGet: vi.fn(),
+  apiPost: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  notFound: vi.fn(() => {
+    throw new Error("not found");
+  }),
+  useRouter: () => ({
+    refresh: vi.fn(),
+  }),
 }));
 
 describe("スキル詳細ページ", () => {
   it("スキル詳細、レビュー、導線リンクを表示する", async () => {
-    vi.mocked(apiGet).mockResolvedValue({
-      data: {
-        id: "10",
-        ownerId: "u1",
-        title: "Laravel pair programming",
-        description: "Hands-on support",
-        price: 8000,
-        category: "PROGRAMMING",
-        area: "Kanagawa",
-        imageUrl: null,
-        owner: {
-          id: "u1",
-          name: "Ito",
+    vi.mocked(apiGet)
+      .mockResolvedValueOnce({
+        data: {
+          id: "10",
+          ownerId: "u1",
+          title: "Laravel pair programming",
+          description: "Hands-on support",
+          price: 8000,
+          category: "PROGRAMMING",
+          area: "Kanagawa",
+          imageUrl: null,
+          owner: {
+            id: "u1",
+            name: "Ito",
+          },
+          averageRating: 4.5,
+          reviewCount: 2,
         },
-        averageRating: 4.5,
-        reviewCount: 2,
-        reviews: [
+      })
+      .mockResolvedValueOnce({
+        data: [
           {
             id: "r1",
             owner: {
@@ -37,8 +51,7 @@ describe("スキル詳細ページ", () => {
             createdAt: "2026-05-11T10:00:00Z",
           },
         ],
-      },
-    });
+      });
 
     const ui = await SkillDetailPage({
       params: Promise.resolve({ id: "10" }),
@@ -61,11 +74,10 @@ describe("スキル詳細ページ", () => {
       "href",
       "/skills/10/reservations",
     );
-    expect(screen.getByRole("link", { name: "レビューを投稿する" })).toHaveAttribute(
-      "href",
-      "#review-form",
-    );
-    expect(screen.getByRole("button", { name: "レビューを投稿する" })).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: "レビュー投稿フォームへ" }),
+    ).toHaveAttribute("href", "#review-form");
+    expect(screen.getByRole("button", { name: "入力フォームを開く" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "← 一覧へ戻る" })).toHaveAttribute(
       "href",
       "/skills",
@@ -73,17 +85,21 @@ describe("スキル詳細ページ", () => {
   });
 
   it("owner や reviews が未取得でも仮置き表示で落ちない", async () => {
-    vi.mocked(apiGet).mockResolvedValue({
-      data: {
-        id: "11",
-        ownerId: "u9",
-        title: "Temporary skill",
-        description: "Backend not ready yet",
-        price: 3000,
-        category: "OTHER",
-        area: "Tokyo",
-      },
-    });
+    vi.mocked(apiGet)
+      .mockResolvedValueOnce({
+        data: {
+          id: "11",
+          ownerId: "u9",
+          title: "Temporary skill",
+          description: "Backend not ready yet",
+          price: 3000,
+          category: "OTHER",
+          area: "Tokyo",
+        },
+      })
+      .mockResolvedValueOnce({
+        data: [],
+      });
 
     const ui = await SkillDetailPage({
       params: Promise.resolve({ id: "11" }),
