@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, use, useEffect, useState } from "react";
-import { apiGet, apiPost, SkillDetailResponse } from "@/lib/api";
+import { ApiError, apiGet, apiPost, SkillDetailResponse } from "@/lib/api";
+import { currentUserId, getSkillOwnerId } from "@/lib/current-user";
 
 type ReservationCreateBody = {
-  skillId: string;
   date: string;
   message: string;
 };
@@ -37,6 +37,11 @@ export default function ReservePage({
     apiGet<SkillDetailResponse>(`/skills/${id}`)
       .then((response) => {
         if (isActive) {
+          if (getSkillOwnerId(response.data) === currentUserId) {
+            router.replace("/skills");
+            return;
+          }
+
           setSkillTitle(response.data.title);
         }
       })
@@ -49,7 +54,7 @@ export default function ReservePage({
     return () => {
       isActive = false;
     };
-  }, [id]);
+  }, [id, router]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
@@ -60,15 +65,25 @@ export default function ReservePage({
       await apiPost<ReservationCreateBody, ReservationCreateResponse>(
         `/skills/${id}/reservations`,
         {
-          skillId: id,
           date,
           message,
+        },
+        {
+          headers: {
+            "X-User-Id": currentUserId,
+          },
         },
       );
 
       router.push(`/skills/${id}?reserved=1`);
-    } catch {
-      setErrorMessage("予約に失敗しました。時間をおいて再度お試しください。");
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        setErrorMessage("予約ユーザーを確認できませんでした。");
+      } else if (error instanceof ApiError && error.status === 422) {
+        setErrorMessage("予約内容を確認してください。既に予約済み、または予約できないスキルです。");
+      } else {
+        setErrorMessage("予約に失敗しました。時間をおいて再度お試しください。");
+      }
     } finally {
       setBusy(false);
     }
@@ -132,7 +147,7 @@ export default function ReservePage({
               <textarea
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
-                maxLength={2000}
+                maxLength={1000}
                 rows={7}
                 className="resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-7 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-100"
               />

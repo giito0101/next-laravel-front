@@ -1,1 +1,1 @@
-export { default } from "../reserve/page";
+export { default } from "@/app/skills/[id]/reserve/page";

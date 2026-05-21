@@ -16,7 +16,8 @@ export class ApiError extends Error {
 
 export type Skill = {
   id: string;
-  ownerId: string;
+  ownerId?: string;
+  owner_id?: string;
   title: string;
   description: string;
   price: number;
@@ -63,6 +64,30 @@ export type SkillReviewsResponse = {
 
 export type SkillReviewResponse = {
   data: SkillReview;
+};
+
+export type Reservation = {
+  id: string;
+  owner_id: string;
+  skill_id: string;
+  date: string;
+  status: string;
+  message?: string | null;
+  created_at: string;
+  updated_at: string;
+  owner?: {
+    id: string;
+    name: string;
+  };
+  skill?: {
+    id: string;
+    title: string;
+    owner_id: string;
+  };
+};
+
+export type ReservationsResponse = {
+  data: Reservation[];
 };
 
 export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {

@@ -42,6 +42,42 @@ describe("スキル一覧ページ", () => {
     expect(apiGet).toHaveBeenCalledWith("/skills");
   });
 
+  it("自分が作成したスキルは一覧に表示しない", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      current_page: 1,
+      last_page: 1,
+      total: 2,
+      data: [
+        {
+          id: "own-skill",
+          ownerId: "demo-customer-1",
+          title: "Own Laravel support",
+          description: "desc",
+          price: 5000,
+          category: "PC_SUPPORT",
+          area: "Tokyo",
+        },
+        {
+          id: "other-skill",
+          ownerId: "provider-photo-1",
+          title: "Photo mentoring",
+          description: "desc",
+          price: 6000,
+          category: "PHOTO",
+          area: "Chiba",
+        },
+      ],
+    });
+
+    const ui = await SkillsPage({
+      searchParams: Promise.resolve({}),
+    });
+    render(ui);
+
+    expect(screen.queryByText("Own Laravel support")).toBeNull();
+    expect(screen.getByText("Photo mentoring")).toBeTruthy();
+  });
+
   it("検索条件付きでAPIを呼び出す", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       current_page: 2,

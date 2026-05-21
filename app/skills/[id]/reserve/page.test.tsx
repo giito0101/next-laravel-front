@@ -24,10 +24,19 @@ vi.mock("react", async () => {
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: navigationMocks.push,
+    replace: vi.fn(),
   }),
 }));
 
 vi.mock("@/lib/api", () => ({
+  ApiError: class ApiError extends Error {
+    constructor(
+      message: string,
+      public status: number,
+    ) {
+      super(message);
+    }
+  },
   apiGet: vi.fn(),
   apiPost: vi.fn(),
 }));
@@ -72,11 +81,18 @@ describe("予約作成ページ", () => {
     fireEvent.click(screen.getByRole("button", { name: "予約する" }));
 
     await waitFor(() => {
-      expect(apiPost).toHaveBeenCalledWith("/skills/15/reservations", {
-        skillId: "15",
-        date: "2026-02-27T10:00",
-        message: "よろしくお願いします。",
-      });
+      expect(apiPost).toHaveBeenCalledWith(
+        "/skills/15/reservations",
+        {
+          date: "2026-02-27T10:00",
+          message: "よろしくお願いします。",
+        },
+        {
+          headers: {
+            "X-User-Id": "demo-customer-1",
+          },
+        },
+      );
     });
 
     expect(navigationMocks.push).toHaveBeenCalledWith("/skills/15?reserved=1");

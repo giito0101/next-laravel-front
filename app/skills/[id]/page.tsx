@@ -7,6 +7,7 @@ import {
   SkillReview,
   SkillReviewsResponse,
 } from "@/lib/api";
+import { currentUserId, getSkillOwnerId } from "@/lib/current-user";
 import { ReviewForm } from "./review-form";
 import { SkillImage } from "./skill-image";
 
@@ -99,17 +100,20 @@ export default async function SkillDetailPage({
   const { id } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const isReserved = pickFirst(resolvedSearchParams?.reserved) === "1";
-  const [res, reviewsRes] = await Promise.all([
-    apiGet<SkillDetailResponse>(`/skills/${id}`).catch((err) => {
-      if (err instanceof ApiError && err.status === 404) {
-        notFound();
-      }
+  const res = await apiGet<SkillDetailResponse>(`/skills/${id}`).catch((err) => {
+    if (err instanceof ApiError && err.status === 404) {
+      notFound();
+    }
 
-      throw err;
-    }),
-    apiGet<SkillReviewsResponse>(`/skills/${id}/reviews`),
-  ]);
+    throw err;
+  });
   const skill = res.data;
+
+  if (getSkillOwnerId(skill) === currentUserId) {
+    notFound();
+  }
+
+  const reviewsRes = await apiGet<SkillReviewsResponse>(`/skills/${id}/reviews`);
   const reviews = reviewsRes.data;
   const averageRating = fallbackAverageRating(skill.averageRating, reviews);
   const reviewCount = fallbackReviewCount(skill.reviewCount, reviews.length);

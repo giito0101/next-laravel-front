@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { apiGet, SkillListResponse } from "@/lib/api";
+import { currentUserId, getSkillOwnerId } from "@/lib/current-user";
 
 type SearchParams = Promise<{
   q?: string | string[];
@@ -85,7 +86,9 @@ export default async function SkillsPage({
 
   const apiPath = createApiPath({ q, category, area, page });
   const res = await apiGet<SkillListResponse>(apiPath);
-  const skills = res.data ?? [];
+  const skills = (res.data ?? []).filter(
+    (skill) => getSkillOwnerId(skill) !== currentUserId,
+  );
 
   const previousPageHref = buildSkillListPath({
     q: q.trim() || undefined,
@@ -123,7 +126,7 @@ export default async function SkillsPage({
               <div className="text-xs uppercase tracking-[0.22em] text-teal-200">
                 Search Result
               </div>
-              <div className="mt-2 text-3xl font-semibold">{res.total}</div>
+              <div className="mt-2 text-3xl font-semibold">{skills.length}</div>
               <div className="text-sm text-slate-300">matching skills</div>
             </div>
           </div>

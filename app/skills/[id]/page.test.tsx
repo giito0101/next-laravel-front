@@ -144,4 +144,24 @@ describe("スキル詳細ページ", () => {
       ),
     ).toBeTruthy();
   });
+
+  it("自分が作成したスキル詳細は表示しない", async () => {
+    vi.mocked(apiGet).mockResolvedValueOnce({
+        data: {
+          id: "13",
+          ownerId: "demo-customer-1",
+          title: "Own skill",
+        description: "Hidden detail",
+        price: 5000,
+        category: "OTHER",
+        area: "Tokyo",
+      },
+    });
+
+    await expect(
+      SkillDetailPage({
+        params: Promise.resolve({ id: "13" }),
+      }),
+    ).rejects.toThrow("not found");
+  });
 });
