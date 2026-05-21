@@ -10,6 +10,14 @@ import {
 import { ReviewForm } from "./review-form";
 import { SkillImage } from "./skill-image";
 
+type SearchParams = Promise<{
+  reserved?: string | string[];
+}>;
+
+function pickFirst(value?: string | string[]): string {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
 function formatPrice(price: number): string {
   return `¥${price.toLocaleString("ja-JP")}`;
 }
@@ -83,10 +91,14 @@ function ReviewCard({ review }: { review: SkillReview }) {
 
 export default async function SkillDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: SearchParams;
 }) {
   const { id } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const isReserved = pickFirst(resolvedSearchParams?.reserved) === "1";
   const [res, reviewsRes] = await Promise.all([
     apiGet<SkillDetailResponse>(`/skills/${id}`).catch((err) => {
       if (err instanceof ApiError && err.status === 404) {
@@ -112,6 +124,12 @@ export default async function SkillDetailPage({
         >
           ← 一覧へ戻る
         </Link>
+
+        {isReserved && (
+          <div className="mt-5 rounded-[24px] border border-teal-100 bg-teal-50/90 px-5 py-4 text-sm font-medium text-teal-800">
+            予約が完了しました。スキル提供者からの連絡をお待ちください。
+          </div>
+        )}
 
         <section className="mt-5 overflow-hidden rounded-[32px] border border-white/70 bg-white/85 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur">
           <div className="grid lg:grid-cols-[1.15fr_0.85fr]">

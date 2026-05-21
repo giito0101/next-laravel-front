@@ -113,4 +113,35 @@ describe("スキル詳細ページ", () => {
     expect(screen.getByText("0件")).toBeTruthy();
     expect(screen.getByText("まだレビューは投稿されていません")).toBeTruthy();
   });
+
+  it("予約完了クエリがある場合は完了メッセージを表示する", async () => {
+    vi.mocked(apiGet)
+      .mockResolvedValueOnce({
+        data: {
+          id: "12",
+          ownerId: "u9",
+          title: "Booked skill",
+          description: "Reservation completed",
+          price: 5000,
+          category: "OTHER",
+          area: "Tokyo",
+        },
+      })
+      .mockResolvedValueOnce({
+        data: [],
+      });
+
+    const ui = await SkillDetailPage({
+      params: Promise.resolve({ id: "12" }),
+      searchParams: Promise.resolve({ reserved: "1" }),
+    });
+
+    render(ui);
+
+    expect(
+      screen.getByText(
+        "予約が完了しました。スキル提供者からの連絡をお待ちください。",
+      ),
+    ).toBeTruthy();
+  });
 });
