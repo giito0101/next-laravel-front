@@ -4,7 +4,7 @@ LocalSkillShare を Laravel API + Next.js 構成で作り直している版の�
 
 このリポジトリはフロントエンドのみを管理しています。バックエンドは別リポジトリの Laravel API (`lss-laravel-api`) を利用します。
 
-Next.js から Laravel API を呼び出し、スキル一覧から詳細、予約フォームへ進む流れを確認できるプロトタイプです。
+Next.js から Laravel API を呼び出し、スキル一覧から詳細、予約作成、所有者向け予約一覧まで確認できるプロトタイプです。
 
 ## 公開デモ
 
@@ -23,14 +23,20 @@ Next.js から Laravel API を呼び出し、スキル一覧から詳細、予�
 | `/skills` | API から取得したスキル一覧を表示 |
 | `/skills/[id]` | スキル詳細を表示 |
 | `/skills/[id]/reserve` | 予約作成フォームを表示 |
+| `/reservations/my` | 所有者として、自分のスキルに入った予約一覧を表示 |
 
-現在は画面デザインを作り込む前の段階で、API 接続とページ遷移の土台を優先しています。
+`/skills/[id]/reservations` は互換用に予約作成ページへつないでいます。所有者向けの予約一覧は `/reservations/my` です。
 
 ## できること
 
 - Laravel API からスキル一覧を取得して表示
+- キーワード、カテゴリ、エリアでスキル一覧を絞り込み
 - 一覧からスキル詳細へ遷移
 - 詳細から予約フォームへ遷移
+- 予約フォームから Laravel API に予約を作成
+- 所有者向けに、自分のスキルに入った予約一覧を表示
+- 現在ユーザーが作成したスキルは一覧・詳細・予約作成対象から除外
+- レビュー一覧表示とレビュー投稿フォーム
 - 共通 API クライアント `lib/api.ts` で API 通信を管理
 - 主要画面の表示と送信処理をテスト
 
@@ -50,6 +56,17 @@ Next.js から Laravel API を呼び出し、スキル一覧から詳細、予�
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000/api
 ```
+
+認証はまだ未導入のため、デモ用のユーザー ID を環境変数で切り替えます。
+
+```env
+NEXT_PUBLIC_DEMO_USER_ID=demo-customer-1
+NEXT_PUBLIC_DEMO_PROVIDER_ID=provider-pc-1
+```
+
+- `NEXT_PUBLIC_DEMO_USER_ID` は、スキル一覧・詳細・予約作成で使う利用者 ID です。
+- `NEXT_PUBLIC_DEMO_PROVIDER_ID` は、`/reservations/my` で使うスキル所有者 ID です。
+- 未設定の場合は `demo-customer-1` / `provider-pc-1` を使います。
 
 Docker で Laravel API を `10000` 番で動かす場合:
 
@@ -78,6 +95,7 @@ npm run dev
 
 ```text
 http://localhost:3000/skills
+http://localhost:3000/reservations/my
 ```
 
 ## テスト
@@ -89,11 +107,11 @@ npm test
 確認済み:
 
 ```text
-Test Files  3 passed (3)
-Tests       3 passed (3)
+Test Files  4 passed (4)
+Tests       11 passed (11)
 ```
 
-テストでは、スキル一覧表示・スキル詳細表示・予約フォーム送信後の表示を確認しています。
+テストでは、スキル一覧表示・自分のスキル除外・スキル詳細表示・予約フォーム送信・所有者向け予約一覧を確認しています。
 
 ## 現在の開発範囲
 
@@ -102,19 +120,23 @@ Tests       3 passed (3)
 現時点では以下が今後の改善対象です。
 
 - トップページはまだ Next.js 初期画面
-- 一覧・詳細画面は簡素な表示
-- 検索 UI / カテゴリ絞り込み UI は未実装
-- 予約作成 payload は Laravel API 側の `date` / `X-User-Id` に合わせる必要あり
+- 本格的なログイン・セッション管理は未導入
+- 予約ステータスの承認・キャンセル操作は未実装
+- `/reservations/my` は所有者向けの閲覧のみ対応
+- 一覧・詳細・予約画面はプロトタイプ UI
 
-## 次に作る画面
+## 次に改善すること
 
-ポートフォリオとして見せるため、次の 3 画面を優先して作り込む想定です。
+ポートフォリオとして見せるため、次の改善を進める想定です。
 
 1. `/skills`
-   スキルカード一覧、検索、カテゴリ絞り込みを追加する。
+   スキルカード一覧、検索、カテゴリ絞り込みの見せ方をさらに整える。
 
 2. `/skills/[id]`
    スキル説明、価格、エリア、予約導線を見やすくする。
 
 3. `/skills/[id]/reserve`
-   Laravel API と接続して、実際に予約作成できる状態にする。
+   バリデーションエラーをより分かりやすく表示する。
+
+4. `/reservations/my`
+   スキル所有者として受けた予約を確認し、将来的に承認・キャンセルできるようにする。
